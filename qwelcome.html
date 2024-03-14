@@ -1,0 +1,285 @@
+
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contribution Management</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    #output {
+      white-space: pre;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .contributor-container {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .contributor-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .contributor-list-item {
+      margin-bottom: 10px;
+    }
+
+    #totalAmount {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    form {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .message-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .message {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .message button {
+      margin-top: 10px;
+    }
+
+    /* Additional CSS styles for responsiveness */
+    @media screen and (max-width: 600px) {
+      .contributor-container {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header with Real-time Updates -->
+<header class="message-container">
+  <div id="output" class="message"></div>
+  <button id="finishButton" onclick="finishProcess()">Finish Process</button>
+</header>
+
+<!-- Contributor List with Sorting and Filtering -->
+<section class="contributor-container" id="contributorContainer">
+  <h2>Contributor List</h2>
+  <div class="filters">
+    <label for="sortBy">Sort by:</label>
+    <select id="sortBy" onchange="sortContributors()">
+      <option value="name">Name</option>
+      <option value="amount">Contribution Amount</option>
+    </select>
+  </div>
+  <ul class="contributor-list" id="contributorList"></ul>
+  <div id="totalAmount" class="message"></div>
+</section>
+
+<!-- Form for Adding Contributions -->
+<section class="form-container">
+  <h2>Add Contribution</h2>
+  <form id="contributionForm">
+    <label for="contributor">Contributor:</label>
+    <input type="text" id="contributor" placeholder="Enter contributor's name">
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount" placeholder="Enter contribution amount">
+    <button type="button" onclick="addContribution()">Add Contribution</button>
+  </form>
+</section>
+
+<!-- Form for Removing Contributions -->
+<section class="form-container">
+  <h2>Remove Contribution</h2>
+  <form id="removeContributionForm">
+    <label for="removeNumber">Contributor Number:</label>
+    <input type="number" id="removeNumber" placeholder="Enter contributor's number">
+    <button type="button" onclick="removeContribution()">Remove Contribution</button>
+  </form>
+</section>
+
+<script>
+  const contributors = [];
+  let shouldContinue = true;
+
+  function displayContributors() {
+    const contributorList = document.getElementById('contributorList');
+    contributorList.innerHTML = '';
+
+    contributors.forEach((contribution, index) => {
+      const contributorListItem = document.createElement('li');
+      contributorListItem.className = 'contributor-list-item';
+      contributorListItem.innerHTML = `<strong>${getNumberWithSuffix(index + 1)} Contributor</strong>: ${contribution.contributor} - ${contribution.amount}`;
+      contributorList.appendChild(contributorListItem);
+    });
+  }
+
+  function displayOutput(message) {
+    document.getElementById('output').innerHTML = `<div class="message">${message}</div>`;
+  }
+
+  function validateSortBy() {
+    const sortBy = document.getElementById('sortBy').value;
+    if (sortBy !== 'name' && sortBy !== 'amount') {
+      alert('Invalid sorting criteria. Please select a valid option.');
+      return false;
+    }
+    return true;
+  }
+
+  function displaySortSuccess() {
+    alert('Contributors sorted successfully.');
+  }
+
+  function addContribution() {
+    const contributorInput = document.getElementById('contributor');
+    const amountInput = document.getElementById('amount');
+
+    const contributor = contributorInput.value.trim();
+    const amount = amountInput.value.trim();
+
+    if (contributor && amount && !isNaN(amount)) {
+      contributors.push({ contributor, amount });
+      contributorInput.value = '';
+      amountInput.value = '';
+      displayOutput(`Contribution added: ${getNumberWithSuffix(contributors.length)} Contributor - ${contributor}-${amount}`);
+      displayContributors();
+    } else {
+      alert("Invalid input. Please enter both contributor's name and a valid amount.");
+    }
+  }
+
+  function removeContribution() {
+    const removeNumberInput = document.getElementById('removeNumber');
+    const removeIndex = parseInt(removeNumberInput.value) - 1;
+
+    if (removeIndex >= 0 && removeIndex < contributors.length) {
+      const removedContribution = contributors.splice(removeIndex, 1)[0];
+      displayOutput(`Contribution removed: ${getNumberWithSuffix(removeIndex + 1)} Contributor - ${removedContribution.contributor}-${removedContribution.amount}`);
+      displayContributors();
+    } else {
+      alert("Invalid contributor number.");
+    }
+  }
+
+  function finishProcess() {
+    shouldContinue = false;
+
+    for (let i = contributors.length + 1; i <= 50; i++) {
+      contributors.push({ contributor: `${getNumberWithSuffix(i)} Contributor`, amount: '' });
+    }
+
+    const total = contributors.reduce((sum, contribution) => {
+      const amount = parseInt(contribution.amount);
+      if (!isNaN(amount)) {
+        return sum + amount;
+      }
+      return sum;
+    }, 0);
+
+    const contributionsList = contributors.map(contribution => `${contribution.contributor} - ${contribution.amount}`).join('<br>');
+
+    const formattedMessage = `
+      <div class="message">
+        <strong>CONTRIBUTIONS FOR THE FUNERAL OF NYADIMO'S DAD</strong><br>
+        ${contributionsList}<br>
+        <strong>TOTAL=${total}/=</strong><br>
+        Kindly channel your contributions to 0707030322-Dennis Sewe.<br>
+        Thank you
+      </div>
+    `;
+
+    displayOutput(formattedMessage);
+
+    document.getElementById('totalAmount').innerHTML = `<strong>Total Contribution: ${total}/=</strong><br>Kindly channel your contributions to 0707030322-Dennis Sewe.`;
+  }
+
+  function getNumberWithSuffix(number) {
+    const suffixes = ["th", "st", "nd", "rd"];
+    const v = number % 100;
+    return number + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+  }
+
+  function sortContributors() {
+    if (validateSortBy()) {
+      const sortBy = document.getElementById('sortBy').value;
+      contributors.sort((a, b) => {
+        if (sortBy === 'name') {
+          return a.contributor.localeCompare(b.contributor);
+        } else if (sortBy === 'amount') {
+          return b.amount - a.amount;
+        }
+      });
+      displayContributors();
+      displaySortSuccess();
+    }
+  }
+</script>
+
+</body>
+</html>
